@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcoTrack IoT</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #12263a;
+      --accent: #0f766e;
+      --accent-2: #0b5ed7;
+      --danger: #b42318;
+      --muted: #667085;
+      --border: #d0d5dd;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    h1, h2 {
+      margin: 0 0 12px;
+    }
+
+    .muted {
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      font-size: 14px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    select, #capacidade_kg {
+      width: 100%;
+      box-sizing: border-box;
+      height: 42px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      line-height: 1.2;
+    }
+
+    button {
+      margin-top: 12px;
+      border: 0;
+      background: var(--accent-2);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+    }
+
+    .ok {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .error {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .status-pendente {
+      color: #b42318;
+      background: #fef3f2;
+      border-color: #fecdca;
+    }
+
+    .status-coletado {
+      color: #067647;
+      background: #ecfdf3;
+      border-color: #abefc6;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>EcoTrack IoT</h1>
+      <p class="muted">Operacao Planeta Limpo - painel simples para coleta.</p>
+
+      {% if resultado_ok %}
+      <p class="ok">{{ resultado_ok }}</p>
+      {% endif %}
+
+      {% if resultado_erro %}
+      <p class="error">{{ resultado_erro }}</p>
+      {% endif %}
+
+      <form method="post" action="/">
+        <div class="grid">
+          <div>
+            <label for="bairro">Bairro</label>
+            <select id="bairro" name="bairro" required>
+              <option value="">Selecione</option>
+              {% for b in bairros %}
+              <option value="{{ b }}" {% if bairro_selecionado == b %}selected{% endif %}>{{ b }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="capacidade_kg">Capacidade (kg)</label>
+            <input id="capacidade_kg" name="capacidade_kg" type="number" min="1" required>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit">Processar Coleta</button>
+        </div>
+      </form>
+
+      <form method="post" action="/resetar" onsubmit="return confirm('Deseja resetar os dados para os valores iniciais?');">
+        <div class="actions">
+          <button class="btn-danger" type="submit">Resetar Dados</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Pontos de coleta</h2>
+      <p class="muted">Peso pendente total: <strong>{{ total_pendente }} kg</strong></p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Bairro</th>
+            <th>Peso (kg)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pontos %}
+          <tr>
+            <td>{{ p[0] }}</td>
+            <td>{{ p[1] }}</td>
+            <td>{{ p[2] }}</td>
+            <td>
+              <span class="status-badge {% if p[3] == 'COLETADO' %}status-coletado{% else %}status-pendente{% endif %}">
+                {{ p[3] }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4">Nenhum ponto pendente.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
