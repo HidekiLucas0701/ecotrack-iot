@@ -44,7 +44,7 @@ def listar_bairros_pendentes():
                 SELECT DISTINCT bairro
                 FROM TB_PONTOS_COLETA
                 WHERE status = 'PENDENTE'
-                ORDER BY bairro
+                ORDER BY id_ponto
                 """
             )
             rows = cursor.fetchall()
